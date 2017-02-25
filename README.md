@@ -9,7 +9,13 @@ A twitter bot that translates tweets !@!@!!
 + redis
 
 ## Steps
-1. create virtualenv, install pip packages
+1. clone repo
+    ```
+    git clone https://github.com/salah93/twitter_translate
+    cd twitter_translate
+    ```
+
+2. create virtualenv, install pip packages
     ```
     pip install -U pip
     pip install virtualenv
@@ -19,7 +25,7 @@ A twitter bot that translates tweets !@!@!!
     pip install -r requirements.txt
     ```
 
-2. set up twitter api
+3. set up twitter api
     - create a new [twitter application](https://apps.twitter.com/)
     - save consumer key, consumer secret, access  key and access secret as environment variables
     ```
@@ -28,7 +34,7 @@ A twitter bot that translates tweets !@!@!!
     export TWITTER_ACCESS_TOKEN='aaaaaaaaaa-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
     export TWITTER_ACCESS_TOKEN_SECRET='aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
     ```
-3. set up google translate api
+4. set up google translate api
     - follow the steps [here](https://cloud.google.com/translate/docs/getting-started)
     - for step 5 set up [service account](https://cloud.google.com/speech/docs/common/auth#set_up_a_service_account)
         - following the steps, you should have set up environment variable pointing to service account file
@@ -36,10 +42,10 @@ A twitter bot that translates tweets !@!@!!
         export GOOGLE_APPLICATION_CREDENTIALS=<path_to_service_account_file>
         ```
 
-4. add environment variables
+5. add environment variables
     + add those previous environment variables to your ~/.bashrc for continuous use in later sessions
 
-5. set up redis
+6. set up redis
     + open a new terminal
     + using your system's package manager, install redis (fedora=dnf, ubuntu=apt-get, mac-os=brew?)
     + start redis server
@@ -48,11 +54,11 @@ A twitter bot that translates tweets !@!@!!
     redis-server
     ```
 
-6. Test app
+7. Test app
     + change hashtag to whatever you want your app to look for, tweet then test app
     ```
     python translate_bot.py
     ```
 
-7. set up mailx
-8. set up crontab
+8. set up mailx
+9. set up crontab
