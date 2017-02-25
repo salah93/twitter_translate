@@ -43,7 +43,7 @@ def reply_to_user(tweet_id, status):
     tweets = list(filter(lambda x: x, split_tweet(status)))
     for t in tweets:
         body = 'in_reply_to_status_id=%s&status=%s' % (tweet_id, t)
-        # resp, content = client.request(url, method='POST', body=body, headers=None)
+        resp, content = client.request(url, method='POST', body=body, headers=None)
     return tweets
 
 
