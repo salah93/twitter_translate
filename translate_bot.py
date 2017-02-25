@@ -14,6 +14,7 @@ import oauth2 as oauth
 import redis
 
 from google.cloud import translate
+from languages import supported_languages
 
 
 def oauth_req(consumer_key, consumer_secret, key, secret):
@@ -56,7 +57,8 @@ def get_text_and_user(content):
     for i in content['statuses']:
         user = i['user']['screen_name']
         tweet_id = i['id']
-        body = ' '.join(users_regex.split(' '.join(hashtags_regex.split(i['text'])).strip())).strip()
+        text = i['text']
+        body = ' '.join(users_regex.split(' '.join(hashtags_regex.split(text)).strip())).strip()
         if not body:
             in_reply = i['in_reply_to_status_id']
             if not in_reply:
@@ -73,11 +75,19 @@ def get_text_and_user(content):
 
         # The text to translate
         # The target language
-        target = 'es'
-        # Translates some text into Spanish
+        default_target= 'es'
+        other_hashtags = list(filter(
+            lambda x: x.lstrip('#') in supported_languages.keys(), hashtags_regex.findall(text)))
+        if other_hashtags:
+            target_language = other_hashtags[0].lstrip('#')
+        else:
+            target_language =  'spanish'
+        target_language = supported_languages.get(target_language.lower(), 'es')
+
+        # Translates some text into target language
         response = translate_client.translate(
             body,
-            target_language=target)
+            target_language=target_language)
         translation = html_parser.unescape(response['translatedText'])
         # translation complete
         tweets = reply_to_user(tweet_id, translation)
