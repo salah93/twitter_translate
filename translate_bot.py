@@ -1,17 +1,17 @@
 import json
 import os
 import re
-import urllib
-
-import oauth2 as oauth
-import requests
-from google.cloud import translate
 try:
     # Python 2.6-2.7
     from HTMLParser import HTMLParser
+    from urllib import urlencode
 except ImportError:
     # Python 3
     from html.parser import HTMLParser
+    from urllib.parse import urlencode
+
+import oauth2 as oauth
+from google.cloud import translate
 
 
 def oauth_req(consumer_key, consumer_secret, key, secret):
@@ -22,30 +22,51 @@ def oauth_req(consumer_key, consumer_secret, key, secret):
 
 
 def search_hashtag(hashtag, since_id='0'):
-    hashtag = urllib.urlencode({'q': hashtag, 'since_id': since_id})
+    hashtag = urlencode({'q': hashtag, 'since_id': since_id})
     url = 'https://api.twitter.com/1.1/search/tweets.json?%s' % hashtag
-    resp, content = client.request(url, method='GET', body='', headers=None)
+    resp, content = client.request(url.encode('ascii'), method='GET', body=''.encode('utf-8'), headers=None)
     assert resp.status == 200
-    return content
+    return content.decode('utf-8')
+
+
+def split_tweet(tweet):
+    ''' in case tweet exceeds 140 characters '''
+    if tweet == '':
+        return []
+    return [tweet[:TWITTER_MAX - 10]] + split_tweet(tweet[TWITTER_MAX - 10:])
 
 
 def reply_to_user(tweet_id, status):
     url = 'https://api.twitter.com/1.1/statuses/update.json'
-    body = 'in_reply_to_status_id=%s&status=%s' % (tweet_id, status)
-    resp, content = client.request(url, method='POST', body=body, headers=None)
-    return content
+    tweets = list(filter(lambda x: x, split_tweet(status)))
+    for t in tweets:
+        body = 'in_reply_to_status_id=%s&status=%s' % (tweet_id, t)
+        resp, content = client.request(url, method='POST', body=body, headers=None)
+    return tweets
 
 
 def get_text_and_user(content):
     hashtags_regex = re.compile('#\w+')
+    users_regex = re.compile('@\w+')
     results = []
     # Instantiates a client
     translate_client = translate.Client()
     for i in content['statuses']:
         user = i['user']['screen_name']
         tweet_id = i['id']
-        body = ' '.join(hashtags_regex.split(i['text'])).strip()
-        results.append((user, body))
+        body = ' '.join(users_regex.split(' '.join(hashtags_regex.split(i['text'])).strip())).strip()
+        if not body:
+            in_reply = i['in_reply_to_status_id']
+            if not in_reply:
+                continue
+            url = 'https://api.twitter.com/1.1/statuses/show.json?id=%s' % in_reply
+            response, content = client.request(url, method='GET', body=''.encode('utf-8'), headers=None)
+            tweet = json.loads(content.decode('utf-8'))
+            body = ' '.join(
+                    users_regex.split(
+                        ' '.join(hashtags_regex.split(tweet['text'])).strip())).strip()
+            if not body:
+                continue
         # translation begins
 
         # The text to translate
@@ -56,14 +77,14 @@ def get_text_and_user(content):
             body,
             target_language=target)
         translation = html_parser.unescape(response['translatedText'])
-        print(u'Text: {}'.format(body).encode('utf-8'))
-        print(u'Translation: {}'.format(translation).encode('utf-8'))
         # translation complete
-        reply_to_user(tweet_id, translation)
+        tweets = reply_to_user(tweet_id, translation)
+        results.append(dict(user=user, text=body, translation=tweets))
     return results
 
 
 if __name__ == '__main__':
+    TWITTER_MAX = 140
     html_parser = HTMLParser()
     consumer_key = os.environ['TWITTER_CONSUMER_KEY']
     consumer_secret = os.environ['TWITTER_CONSUMER_SECRET']
@@ -76,5 +97,7 @@ if __name__ == '__main__':
     # update since_id
     since_id = content['search_metadata']['max_id_str']
     results = get_text_and_user(content)
-    for i in results:
-        print(("user: %s\ntweet: %s\n\n" % (i[0], i[1])).encode('utf-8'))
+    for tweet in results:
+        print(u'User: {}'.format(tweet['user']).encode('utf-8'))
+        print(u'Text: {}'.format(tweet['text']).encode('utf-8'))
+        print(u'Translation: {}'.format(tweet['translation']).encode('utf-8'))
