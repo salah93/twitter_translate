@@ -56,8 +56,8 @@ def get_text_and_user(content):
             body,
             target_language=target)
         translation = html_parser.unescape(response['translatedText'])
-        print(u'Text: {}'.format(body))
-        print(u'Translation: {}'.format(translation))
+        print(u'Text: {}'.format(body).encode('utf-8'))
+        print(u'Translation: {}'.format(translation).encode('utf-8'))
         # translation complete
         reply_to_user(tweet_id, translation)
     return results
@@ -77,4 +77,4 @@ if __name__ == '__main__':
     since_id = content['search_metadata']['max_id_str']
     results = get_text_and_user(content)
     for i in results:
-        print("user: %s\ntweet: %s\n\n" % (i[0], i[1]))
+        print(("user: %s\ntweet: %s\n\n" % (i[0], i[1])).encode('utf-8'))
