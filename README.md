@@ -46,12 +46,15 @@ A twitter bot that translates tweets !@!@!!
     + add those previous environment variables to your ~/.bashrc for continuous use in later sessions
 
 6. set up redis
-    + open a new terminal
+    + using `tmux` create a new session
     + using your system's package manager, install redis (fedora=dnf, ubuntu=apt-get, mac-os=brew?)
     + start redis server
     ```
+    sudo dnf install -y tmux
+    tmux
     sudo dnf install -y redis
     redis-server
+    <ctrl-b> d
     ```
 
 7. Test app
@@ -60,5 +63,10 @@ A twitter bot that translates tweets !@!@!!
     python translate_bot.py
     ```
 
-8. set up mailx
-9. set up crontab
+8. set up [mailx](https://coderwall.com/p/ez1x2w/send-mail-like-a-boss)
+9. set up [crontab](http://kvz.io/blog/2007/07/29/schedule-tasks-on-linux-using-crontab/)
+```
+crontab -e
+SHELL=/bin/bash
+0 8-23 * * * . ~/.bashrc; ~/.virtualenvs/twitter3/bin/python ~/Projects/twitter_translate/translate_bot.py 2>&1 | mail -A gmail -s "Twitter Translation output" youremail@gmail.com
+```
