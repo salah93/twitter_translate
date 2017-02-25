@@ -5,7 +5,6 @@ import urllib
 
 import oauth2 as oauth
 import requests
-from bs4 import BeautifulSoup
 from google.cloud import translate
 try:
     # Python 2.6-2.7

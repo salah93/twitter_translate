@@ -1,1 +1,3 @@
+google-cloud-translate==0.22.0
 python_oauth2
+requests
