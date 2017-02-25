@@ -1,2 +1,2 @@
 google-cloud-translate==0.22.0
-python_oauth2
+git+https://github.com/joestump/python-oauth2.git
