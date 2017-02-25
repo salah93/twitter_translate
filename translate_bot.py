@@ -11,6 +11,8 @@ except ImportError:
     from urllib.parse import urlencode
 
 import oauth2 as oauth
+import redis
+
 from google.cloud import translate
 
 
@@ -41,7 +43,7 @@ def reply_to_user(tweet_id, status):
     tweets = list(filter(lambda x: x, split_tweet(status)))
     for t in tweets:
         body = 'in_reply_to_status_id=%s&status=%s' % (tweet_id, t)
-        resp, content = client.request(url, method='POST', body=body, headers=None)
+        # resp, content = client.request(url, method='POST', body=body, headers=None)
     return tweets
 
 
@@ -92,10 +94,12 @@ if __name__ == '__main__':
     access_token_secret = os.environ['TWITTER_ACCESS_TOKEN_SECRET']
     client = oauth_req(consumer_key, consumer_secret, access_token, access_token_secret)
     # get past since_id
-    since_id = '0'
+    r = redis.StrictRedis()
+    since_id = r.get('since_id') or '0'
     content = json.loads(search_hashtag('#translate_salah', since_id))
     # update since_id
     since_id = content['search_metadata']['max_id_str']
+    r.set('since_id', since_id)
     results = get_text_and_user(content)
     for tweet in results:
         print(u'User: {}'.format(tweet['user']).encode('utf-8'))
