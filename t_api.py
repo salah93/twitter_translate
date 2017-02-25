@@ -53,10 +53,10 @@ def get_text_and_user(content):
 
 
 if __name__ == '__main__':
-    consumer_key = os.environ['twitter_consumer_key']
-    consumer_secret = os.environ['twitter_consumer_secret']
-    access_token = os.environ['twitter_access_token']
-    access_token_secret = os.environ['twitter_access_token_secret']
+    consumer_key = os.environ['TWITTER_CONSUMER_KEY']
+    consumer_secret = os.environ['TWITTER_CONSUMER_SECRET']
+    access_token = os.environ['TWITTER_ACCESS_TOKEN']
+    access_token_secret = os.environ['TWITTER_ACCESS_TOKEN_SECRET']
     client = oauth_req(consumer_key, consumer_secret, access_token, access_token_secret)
     content = json.loads(search_hashtag('#translate_salah'))
     since_id = content['search_metadata']['max_id_str']
